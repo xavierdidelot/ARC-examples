@@ -19,13 +19,6 @@ arctds <- lapply( 1:length(tres), function(itre ){
 })
 #~ plot( tmrcas, sapply( arctds, '[[', 'timeOfMRCA' ), ylim = range( tmrcas ) )
 
-# fails: 
-#urctds <- lapply( 1:length(tres), function(itre ){
-#	tr <- tres[[itre]]
-# 	tr$edge.length <- tr$edge.length / 1000 
-# 	dater( unroot(tr), sts = sts, s = 1e3 , clock = 'uncorrelated', quiet = FALSE , ncpu = 8)
-# })
-
 # par bootstrap 
 ind=0
 ptm <- proc.time()
@@ -79,77 +72,3 @@ dev.off()
 system('open treedater-arc-simunwk.pdf')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-if (F) {
-
-    sctds <- lapply( 1:length(tres), function(itre ){
-      tr <- tres[[itre]]
-      #tr$edge.length <- tr$edge.length / 1000 
-      dater( unroot(tr), sts = sts, s = 1e4 , clock = 'strict', quiet = FALSE , ncpu = 8)
-    })
-    #~ plot( tmrcas, sapply( sctds, '[[', 'timeOfMRCA' ), ylim = range( tmrcas ) )
-  
-  
-    scpbs <- lapply( sctds, function(td) tryCatch( {
-      pb = parboot( td, ncpu = 8,  overrideTempConstraint=FALSE , overrideSearchRoot=FALSE)
-      print( pb )
-      list( tmrca  = c( pb$td$timeOf, pb$timeOfMRCA_CI )
-            , meanrate = c( pb$td$mean.rate , pb$meanRate_CI )
-            , sp = NA
-      )
-    }, error = function(e) { print( 'Oh noes, got an Error');  NA}  )
-    ) #
-  
-  
-# strict results 
-
-sc_tmrca_resid <- matrix( NA, nrow = 100, ncol = 3)
-sc_meanrate <- matrix( NA, nrow = 100, ncol = 3)
-sc_sp <- matrix( NA, nrow = 100, ncol = 3)
-
-for ( j in 1:100){
-	if ( !is.na( scpbs[[j]][1] ) ){
-		sc_tmrca_resid[j, ] <- scpbs[[j]]$tmrca - tmrcas[j] 
-				
-		sc_meanrate[j, ] <- scpbs[[j]]$meanrate 
-		
-		sc_sp[j, ] <- scpbs[[j]]$sp
-	}
-}
-
-#~ errbar (1:100, sc_tmrca_resid[,1],  sc_tmrca_resid[, 3], sc_tmrca_resid[,2] , ylim = c(-30, 30 ) ); abline ( h = 0)
-#~ X11(); errbar( 1:100, sc_meanrate[, 1], sc_meanrate[,3], sc_meanrate[,2], ylim = c( 0, .011) ); abline ( h = .005 )
-pdf('treedater-sc-simunwk.pdf', width = 4.5, height = 6)
-par( mfrow = c(2, 1 ))
-errbar (1:100, sc_tmrca_resid[,1],  sc_tmrca_resid[, 3], sc_tmrca_resid[,2] , ylim = c(-25, 25 ) 
- , xlab = ''
- , ylab = 'TMRCA residual'); abline ( h = 0)
-#~ X11();
- errbar( 1:100, sc_meanrate[, 1], sc_meanrate[,3], sc_meanrate[,2], ylim = c( 0, .011) 
- , xlab = '' 
- , ylab = 'Mean clock rate' ); abline ( h = .005 )
-#~ X11(); 
-dev.off()
-
-
-# tables
-write.table( arc_tmrca_resid, file = 'arc_tmrca_resid.tab' , row.names=F, col.names=F) 
-write.table( arc_meanrate, file = 'arc_meanrate.tab' , row.names=F, col.names=F) 
-write.table( arc_sp, file = 'arc_sp.tab' , row.names=F, col.names=F) 
-
-write.table( sc_tmrca_resid, file = 'sc_tmrca_resid.tab' , row.names=F, col.names=F) 
-write.table( sc_meanrate, file = 'sc_meanrate.tab' , row.names=F, col.names=F) 
-write.table( sc_sp, file = 'sc_sp.tab' , row.names=F, col.names=F) 
-
-}
