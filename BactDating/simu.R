@@ -25,7 +25,7 @@ if (ind<=100) {
 }
 
 #create alignment using seq-gen, run phyml and load tree
-nsites=100000
+nsites=10000
 write.tree(obsphy,sprintf('tree%d.nwk',ind))
 system(sprintf('seq-gen -l %d -s %f -m HKY -z %d < tree%d.nwk > seqs%d.nex',nsites,1/nsites,ind,ind,ind))
 system(sprintf('phyml --no_memory_check -b 0 -c 1 -t 1 -q -i seqs%d.nex',ind))
